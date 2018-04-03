@@ -6,7 +6,7 @@ import numpy as np
 
 class TimeseriesM3():
     def __init__(self,id_serie,serie,category_name ='',frequency='',start_period1='0',start_period2='0',forecast_period=0):
-        self._id = id_serie.replace("0","").replace("N","").replace(" ","")
+        self._id = id_serie.replace("N","").replace(" ","")
         self._serie = serie
         self._len_serie = len (serie)
         if forecast_period > (self._len_serie):
@@ -17,10 +17,10 @@ class TimeseriesM3():
         self._time_test = self._time[len (self._serie) - self._len_forecast:len(self._serie)]
         self._serie_train = self._serie[:-self._len_forecast]
         self._time_train = self._time[:-self._len_forecast]
-        self._category_name = category_name.replace("0","").replace("N","").replace(" ","")
-        self._frequency = frequency.replace("0","").replace("N","").replace(" ","")
-        self._start_period1 = int(start_period1.replace("0","").replace("N","").replace(" ",""))
-        self._start_period2 = int(start_period2.replace("0","").replace("N","").replace(" ",""))
+        self._category_name = category_name.replace(" ","")
+        self._frequency = frequency.replace(" ","")
+        self._start_period1 = int(start_period1.replace(" ",""))
+        self._start_period2 = int(start_period2.replace(" ",""))
         self._extract_features = False
         self._features_filtered_direct = None
         self._fdr_level = 0.05
