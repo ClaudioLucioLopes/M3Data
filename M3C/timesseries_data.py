@@ -21,11 +21,13 @@ class TimeseriesM3():
         self._category_name = category_name.replace(" ","")
         self._frequency = frequency.replace(" ","")
         self._start_period1 = int(start_period1.replace(" ",""))
+        if self._start_period1 == 0:
+            self._start_period1 = pd.Timestamp.min.year+1
         self._start_period2 = int(start_period2.replace(" ",""))
         self._extract_features = False
         self._features_filtered_direct = None
         self._fdr_level = 0.05
-        self._foptions = {'Year': "A"}
+        self._foptions = {'Year': "A",'Quarter':"Q",'Month':"M"}
 
     def get_forecast_data(self,response=False):
         if response :
@@ -121,8 +123,8 @@ class ListTimeseriesM3():
             final_series = np.array(series)
             valor = TimeseriesM3(id_serie=raw_data['Series'].to_string(index=False,header=False), serie=final_series,
                                     category_name=raw_data['Category'].to_string(index=False,header=False), \
-                                    frequency='Year', start_period1=raw_data['Starting Year'].to_string(index=False,header=False),
-                                    start_period2=raw_data['Unnamed: 5'].to_string(index=False,header=False), \
+                                    frequency=frequency, start_period1=raw_data[raw_data.columns[4]].to_string(index=False,header=False),
+                                    start_period2=raw_data[raw_data.columns[5]].to_string(index=False,header=False), \
                                     forecast_period=forecast_period)
             valor.get_extracted_features(train_data = True)
             time_series_list.append(valor)

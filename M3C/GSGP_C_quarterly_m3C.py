@@ -9,18 +9,12 @@ import csv
 import os
 from arch.bootstrap import MovingBlockBootstrap
 
-
-#teste = timesseries_data.ListTimeseriesM3(filename_input = 'c:\\temp\\M3Data\\data\\M3C.xls',sheet='M3Year',\
-#                 filename_output='c:\\temp\\M3Data\\data\\M3C.pck',forecast_period=6, frequency='Year',)
-
-
-#teste = tm.ListTimeseriesM3(filename_input = '/home/claudio/PycharmProjects/M3Data/data/M3C.xls',sheet='M3Year',\
-#                 filename_output='/home/claudio/PycharmProjects/M3Data/data/M3C.pck',forecast_period=6, frequency='Year',)
-
+# teste = tm.ListTimeseriesM3(filename_input = '/home/claudio/PycharmProjects/M3Data/data/M3C.xls',sheet='M3Quart',\
+#                  filename_output='/home/claudio/PycharmProjects/M3Data/data/M3Quart.pck',forecast_period=8, frequency='Quarter',)
+#
 
 
 #timesseries_data.ListTimeseriesM3.save(listObject=times_series_year,filename_output='c:\\temp\\M3Data\\data\\M3C_teste1.pck')
-
 
 def process_times_series(time_series):
     print("---------------Serie : " + str(time_series.get_id()))
@@ -28,7 +22,7 @@ def process_times_series(time_series):
 
 
     #Year Data with 6 to forecast
-    length_moving = 7
+    length_moving = 9
     number_rows = (train_data.shape[0] // length_moving)
     names_dfs = list(map(lambda x: 'X' +x ,list(map(str,range(length_moving-1)))))
     names_dfs.append("Y")
@@ -175,13 +169,13 @@ def process_times_series(time_series):
     return time_series
 
 
-times_series_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C.pck', "rb"))
+times_series_M3Quart= pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3Quart.pck', "rb"))
 
 
 
-for i in range(len(times_series_year)):
-    times_series_year[i] = process_times_series(times_series_year[i])
-    tm.ListTimeseriesM3.save(listObject=times_series_year,filename_output='/home/claudio/PycharmProjects/M3Data/data/M3C_pred_wt_constant.pck')
+for i in range(len(times_series_M3Quart)):
+    times_series_M3Quart[i] = process_times_series(times_series_M3Quart[i])
+    tm.ListTimeseriesM3.save(listObject=times_series_M3Quart,filename_output='/home/claudio/PycharmProjects/M3Data/data/M3Quart_pred_wt_constant.pck')
 
 
 
@@ -202,10 +196,10 @@ for i in range(len(times_series_year)):
 # if __name__ == "__main__":
 #     main()
 
+#Year Data with 6 to forecast
+length_moving = 9
+timesseries_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C_pred_quaterly_final_20180508.pck', "rb"))
 
-timesseries_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C_pred_yearly_final_20180508.pck', "rb"))
-
-length_moving = 7
 sMape = np.zeros((len(timesseries_year), length_moving-1))
 for k,ts in enumerate(timesseries_year):
     real= ts.get_test_data()['value'].tolist()
@@ -214,24 +208,28 @@ for k,ts in enumerate(timesseries_year):
         sMape[k][i] = abs(real[i] - pred[i]) / (
                 ((real[i]) + (pred[i])) / 2) * 100
 
+
 from scipy.stats import describe
 for i in range(length_moving-1):
     print(i+1,describe(sMape[:, i]))
-
 describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3])))
 describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3],sMape[:, 4],sMape[:, 5])))
+describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3],sMape[:, 4],sMape[:, 5],sMape[:, 6],sMape[:, 7])))
 
 
 import matplotlib as plt
 import seaborn as sns
 sns.set_style("whitegrid")
 sMape_df = pd.DataFrame(sMape)
-sMape_df.columns = list(map(lambda x: ' ' +x ,list(map(str,range(1,7)))))
+sMape_df.columns = list(map(lambda x: ' ' +x ,list(map(str,range(1,length_moving )))))
 
 sMape_df_stacked = sMape_df.melt()
 sMape_df_stacked=sMape_df_stacked.rename(columns={'variable': 'Forecast'})
 g = sns.FacetGrid(sMape_df_stacked,col="Forecast",col_wrap=2)
 g.map(sns.distplot,'value')
+
+
+
 
 
 

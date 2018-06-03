@@ -9,17 +9,10 @@ import csv
 import os
 from arch.bootstrap import MovingBlockBootstrap
 
+# teste = tm.ListTimeseriesM3(filename_input = '/home/claudio/PycharmProjects/M3Data/data/M3C.xls',sheet='M3Other',\
+#                    filename_output='/home/claudio/PycharmProjects/M3Data/data/M3C_pred_other_final_20180508.pck',forecast_period=8, frequency='Month',)
+#
 
-#teste = timesseries_data.ListTimeseriesM3(filename_input = 'c:\\temp\\M3Data\\data\\M3C.xls',sheet='M3Year',\
-#                 filename_output='c:\\temp\\M3Data\\data\\M3C.pck',forecast_period=6, frequency='Year',)
-
-
-#teste = tm.ListTimeseriesM3(filename_input = '/home/claudio/PycharmProjects/M3Data/data/M3C.xls',sheet='M3Year',\
-#                 filename_output='/home/claudio/PycharmProjects/M3Data/data/M3C.pck',forecast_period=6, frequency='Year',)
-
-
-
-#timesseries_data.ListTimeseriesM3.save(listObject=times_series_year,filename_output='c:\\temp\\M3Data\\data\\M3C_teste1.pck')
 
 
 def process_times_series(time_series):
@@ -28,7 +21,7 @@ def process_times_series(time_series):
 
 
     #Year Data with 6 to forecast
-    length_moving = 7
+    length_moving = 9
     number_rows = (train_data.shape[0] // length_moving)
     names_dfs = list(map(lambda x: 'X' +x ,list(map(str,range(length_moving-1)))))
     names_dfs.append("Y")
@@ -51,8 +44,8 @@ def process_times_series(time_series):
     train, test = train_test_split(dfs,test_size=0.2, random_state=0,shuffle=False)
     #generate train file
     filename_train =  'train_'+ time_series.get_id() + '.tab'
-    train.to_csv(filename_train, sep="\t", quoting=csv.QUOTE_NONE,header=None,index=False)
-    with open(filename_train, 'r') as original: data = original.read()
+    train.to_csv( filename_train, sep="\t", quoting=csv.QUOTE_NONE,header=None,index=False)
+    with open( filename_train, 'r') as original: data = original.read()
     with open(filename_train, 'w') as modified: modified.write(str(train.shape[1]-1) +"\n" + str(train.shape[0]) +"\n"+ data)
     #generate test file
     filename_test =  'test_'+ time_series.get_id() + '.tab'
@@ -68,8 +61,8 @@ def process_times_series(time_series):
 
     names_dfs_prev = list(map(lambda x: 'X' + x, list(map(str, range(length_moving - 1)))))
     dfs_prev = test[names_dfs_prev]
-    dfs_prev.to_csv(filename_pred, sep="\t", quoting=csv.QUOTE_NONE, header=None, index=False)
-    with open(filename_pred, 'r') as original:
+    dfs_prev.to_csv( filename_pred, sep="\t", quoting=csv.QUOTE_NONE, header=None, index=False)
+    with open( filename_pred, 'r') as original:
         data = original.read()
     with open(filename_pred, 'w') as modified:
         modified.write(str(dfs_prev.shape[1]) + "\n" + data)
@@ -78,23 +71,22 @@ def process_times_series(time_series):
 
     ##Loop to the best model trained
     for numIter in range(50):
-        print('-----Iteration: '+ str(numIter))
+        print('-----Iteration: ' + str(numIter))
 
         ret_GSGP = -1073741819
         while not (ret_GSGP == 0):
             ret_GSGP = os.system(file_path + "GP -train_file " + filename_train + " -test_file " + filename_test)
 
         ###generate the predict values to test data set
-        #Rename the configuration file to execute
+        # Rename the configuration file to execute
         os.system('rm configuration_train.ini')
         os.system('cp configuration.ini configuration_train.ini')
         os.system('rm configuration.ini')
         os.system('cp configuration_test.ini configuration.ini')
 
-        #TODO: create e method do train e test and predict
-        #Execute the unseen data
+        # TODO: create e method do train e test and predict
+        # Execute the unseen data
         ret_GSGP = -1073741819
-
 
         # Execute the prediction command
         ret_GSGP = -1073741819
@@ -107,24 +99,24 @@ def process_times_series(time_series):
         os.system('rm configuration.ini')
         os.system('cp configuration_train.ini configuration.ini')
 
-
-        #calculate the SMape to test or train
+        # calculate the SMape to test or train
         df_predicted.columns = ['pred']
-        predicted_values =  df_predicted['pred'][:-1].values.tolist()
-        #TODO:Vectorize the following expression
+        predicted_values = df_predicted['pred'][:-1].values.tolist()
+        # TODO:Vectorize the following expression
         sMape = 0
         for i in range(len(predicted_values)):
-            sMape += abs(test['Y'].values[i] - predicted_values[i]) / ((abs(test['Y'].values[i])+abs(predicted_values[i]))/2)
-        sMape = sMape*100/len(predicted_values)
+            sMape += abs(test['Y'].values[i] - predicted_values[i]) / (
+            (abs(test['Y'].values[i]) + abs(predicted_values[i])) / 2)
+        sMape = sMape * 100 / len(predicted_values)
 
         # If the model has a better model than the last one executed than save the files in best model
         if sMape < bestsMape:
-            os.system('cp individuals.txt ' + file_path + 'bestmodel/individuals.txt' )
+            os.system('cp individuals.txt ' + file_path + 'bestmodel/individuals.txt')
             os.system('cp trace.txt ' + file_path + 'bestmodel/trace.txt')
             bestsMape = sMape
             print('New best sMape: ' + str(bestsMape))
 
-        #Put back the files to restart the training
+        # Put back the files to restart the training
         os.system('rm configuration.ini')
         os.system('cp configuration_train.ini configuration.ini')
 
@@ -140,7 +132,7 @@ def process_times_series(time_series):
 
     ##Execute the unseen data
     ret_GSGP = -1073741819
-    filename_valid =file_path +  'valid_'+ time_series.get_id() + '.tab'
+    filename_valid ='valid_'+ time_series.get_id() + '.tab'
 
     names_dfs_prev = list(map(lambda x: 'X' +x ,list(map(str,range(length_moving-1)))))
     dfs_prev = pd.DataFrame(columns=names_dfs_prev)
@@ -152,11 +144,9 @@ def process_times_series(time_series):
         # Execute reg_prev with the last length_moving values
         dfs_prev= pd.DataFrame(pd.DataFrame(reg_prev).transpose())
         dfs_prev.columns = names_dfs_prev
-        dfs_prev.to_csv(filename_valid, sep="\t", quoting=csv.QUOTE_NONE,header=None,index=False)
-        with open(filename_valid, 'r') as original: data = original.read()
-        with open(filename_valid, 'w') as modified: modified.write(str(dfs_prev.shape[1]) +"\n" + data)
-
-        #Execute the prediction command
+        dfs_prev.to_csv(file_path + filename_valid, sep="\t", quoting=csv.QUOTE_NONE,header=None,index=False)
+        with open(file_path + filename_valid, 'r') as original: data = original.read()
+        with open(file_path + filename_valid, 'w') as modified: modified.write(str(dfs_prev.shape[1]) +"\n" + data)
         ret_GSGP = -1073741819
         while not (ret_GSGP == 0):
             ret_GSGP = os.system(file_path + "GP -test_file " + filename_valid)
@@ -175,13 +165,15 @@ def process_times_series(time_series):
     return time_series
 
 
-times_series_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C.pck', "rb"))
+times_series_M3Month= pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C_pred_other_final_20180508.pck', "rb"))
+
+        #Execute the prediction command
 
 
 
-for i in range(len(times_series_year)):
-    times_series_year[i] = process_times_series(times_series_year[i])
-    tm.ListTimeseriesM3.save(listObject=times_series_year,filename_output='/home/claudio/PycharmProjects/M3Data/data/M3C_pred_wt_constant.pck')
+for i in range(len(times_series_M3Month)):
+    times_series_M3Month[i] = process_times_series(times_series_M3Month[i])
+    tm.ListTimeseriesM3.save(listObject=times_series_M3Month,filename_output='/home/claudio/PycharmProjects/M3Data/data/M3Other_pred_wt_constant.pck')
 
 
 
@@ -202,10 +194,10 @@ for i in range(len(times_series_year)):
 # if __name__ == "__main__":
 #     main()
 
+#Year Data with 6 to forecast
+length_moving = 9
+timesseries_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C_pred_other_final_20180601.pck', "rb"))
 
-timesseries_year = pickle.load(open('/home/claudio/PycharmProjects/M3Data/data/M3C_pred_yearly_final_20180508.pck', "rb"))
-
-length_moving = 7
 sMape = np.zeros((len(timesseries_year), length_moving-1))
 for k,ts in enumerate(timesseries_year):
     real= ts.get_test_data()['value'].tolist()
@@ -214,24 +206,30 @@ for k,ts in enumerate(timesseries_year):
         sMape[k][i] = abs(real[i] - pred[i]) / (
                 ((real[i]) + (pred[i])) / 2) * 100
 
+import seaborn as sns
 from scipy.stats import describe
 for i in range(length_moving-1):
     print(i+1,describe(sMape[:, i]))
-
 describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3])))
 describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3],sMape[:, 4],sMape[:, 5])))
+describe(np.concatenate((sMape[:, 0],sMape[:, 1],sMape[:, 2],sMape[:, 3],sMape[:, 4],sMape[:, 5],sMape[:, 6],sMape[:, 7])))
 
 
 import matplotlib as plt
-import seaborn as sns
 sns.set_style("whitegrid")
 sMape_df = pd.DataFrame(sMape)
-sMape_df.columns = list(map(lambda x: ' ' +x ,list(map(str,range(1,7)))))
+sMape_df.columns = list(map(lambda x: ' ' +x ,list(map(str,range(1,length_moving)))))
 
 sMape_df_stacked = sMape_df.melt()
 sMape_df_stacked=sMape_df_stacked.rename(columns={'variable': 'Forecast'})
+sMape_df_stacked['Forecast'] = sMape_df_stacked['Forecast'].astype('int32')
+
+sMape_df_stacked.columns
 g = sns.FacetGrid(sMape_df_stacked,col="Forecast",col_wrap=2)
 g.map(sns.distplot,'value')
+
+
+
 
 
 
